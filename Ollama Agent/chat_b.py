@@ -1,7 +1,7 @@
 import asyncio
 from ollama import AsyncClient
 # 参数：messages：对话历史，model：模型名称 
-async def chat(messages,model='llama3.2'):
+async def chat(messages, model='llama3.2'):
     async for part in await AsyncClient().chat(model=model, messages=messages, stream=True):
         print(part['message']['content'], end='', flush=True)
     return part['message']['content']  # Return the last response
