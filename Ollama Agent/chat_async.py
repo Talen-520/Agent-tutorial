@@ -1,6 +1,6 @@
 import asyncio
 from ollama import AsyncClient
-
+# 异步
 async def chat():
   messages = [
     {

@@ -1,7 +1,7 @@
 import asyncio
 import ollama
 from ollama import ChatResponse
-
+# 定义工具
 def subtract_two_numbers(a: int, b: int) -> int:
     """
     Subtract two numbers
@@ -54,13 +54,14 @@ add_two_numbers_tool = {
 }
 
 # Initialize messages with a system message to set the context
+# 设置历史记录和系统提示词
 messages = [{'role': 'system', 'content': 'You are a helpful assistant.'}]
 
 available_functions = {
     'add_two_numbers': add_two_numbers,
     'subtract_two_numbers': subtract_two_numbers,
 }
-
+# 用独立函数调用工具，增加代码可读性
 async def call_function(tool_call):
     """Call the function specified in the tool call and return the output."""
     if function_to_call := available_functions.get(tool_call.function.name):
@@ -72,29 +73,32 @@ async def call_function(tool_call):
     else:
         print('Function', tool_call.function.name, 'not found')
         return None
-
+# 主函数
 async def main():
     client = ollama.AsyncClient()
-    model_name = 'qwq'
+    model_name = 'qwen2.5'
     while True:
-        # Get user input
         user_input = input("You: ")
         if user_input.lower() in ['exit', 'quit']:
             print("Goodbye!")
             break
 
-        # Add user input to messages
+        # 添加用户输入到历史记录
         messages.append({'role': 'user', 'content': user_input})
 
-        # Send the message to the model
+        # 调用模型
         response: ChatResponse = await client.chat(
             model_name,
             messages=messages,
             tools=[add_two_numbers_tool, subtract_two_numbers_tool],
         )
 
-        print('Assistant:', response.message.content) # model response is empty
-
+        # 输出模型响应，观察输出结果
+        print('response:', response)
+        print('response message:', response.message)
+        print('response message tool_calls:', response.message.tool_calls)
+        print('response message content:', response.message.tool_calls)
+         
         if response.message.tool_calls:
             for tool_call in response.message.tool_calls:
                 output = await call_function(tool_call)
@@ -102,22 +106,17 @@ async def main():
                     messages.append(response.message)
                     messages.append({'role': 'tool', 'content': str(output), 'name': tool_call.function.name})
 
-                    # Get final response from model with function outputs
+                    # 从模型获取最终响应
                     final_response = await client.chat(model_name, messages=messages)
                     print('Assistant:', final_response.message.content)
                     messages.append({'role': 'assistant', 'content': final_response.message.content})
         else:
-            # If no tool calls, just print the model's response
+            # 没有工具调用，一般回答
             print('Assistant:', response.message.content)
             messages.append({'role': 'assistant', 'content': response.message.content})
 
-        # 原始模型数据
+        # 观察历史记录
         print(messages)
-
-        import json
-        # 将整个响应转换为格式化的 JSON 字符串
-        print("Full response (JSON formatted):")
-        print(json.dumps(messages, indent=2))
 
 
 if __name__ == '__main__':

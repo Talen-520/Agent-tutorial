@@ -61,18 +61,19 @@ async def main():
     )
 
     if response.message.tool_calls:
-        # There may be multiple tool calls in the response
+        # Loop through the tool calls and call the functions
+        # 遍历函数并调用所有可用工具
         for tool in response.message.tool_calls:
             # Ensure the function is available, and then call it
+            # 确保函数可用，然后调用它
             if function_to_call := available_functions.get(tool.function.name):
                 print('Calling function:', tool.function.name)
                 print('Arguments:', tool.function.arguments)
                 output = function_to_call(**tool.function.arguments)
                 print('Function output:', output)
             else:
-                # 如果没有可用工具，则打印错误消息, 或
+                # 如果没有可用工具，则输出错误
                 print('Function', tool.function.name, 'not found')
-                print()
     # Only needed to chat with the model using the tool call results
     if response.message.tool_calls:
         # Add the function response to messages for the model to use
@@ -81,6 +82,7 @@ async def main():
             output), 'name': tool.function.name})
 
         # Get final response from model with function outputs
+        # 从模型获取最终响应
         final_response = await client.chat('qwq', messages=messages)
         print('Final response:', final_response.message.content)
 

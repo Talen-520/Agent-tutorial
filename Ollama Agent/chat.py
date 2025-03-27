@@ -1,5 +1,6 @@
 from ollama import chat
 
+# 基础对话
 messages = [
   {
     'role': 'user',
