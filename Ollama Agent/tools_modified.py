@@ -20,7 +20,7 @@ def add_two_numbers(a: int, b: int) -> int:
     print("function add_two_numbers called")
     return a + b
 
-# OpenAI format
+# OpenAI 格式
 subtract_two_numbers_tool = {
     'type': 'function',
     'function': {
@@ -53,7 +53,6 @@ add_two_numbers_tool = {
     },
 }
 
-# Initialize messages with a system message to set the context
 # 设置历史记录和系统提示词
 messages = [{'role': 'system', 'content': 'You are a helpful assistant.'}]
 
@@ -95,7 +94,6 @@ async def main():
 
         # 输出模型响应，观察输出结果
         print('response:', response)
-        print('response message:', response.message)
         print('response message tool_calls:', response.message.tool_calls)
         print('response message content:', response.message.tool_calls)
          

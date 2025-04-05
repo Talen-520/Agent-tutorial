@@ -8,7 +8,7 @@ async def chat():
       'content': 'Why is the sky blue?',
     },
   ]  
-  async for part in await AsyncClient().chat(model='llama3.2', messages=messages, stream=True):
+  async for part in await AsyncClient().chat(model='qwen2.5', messages=messages, stream=True):
     print(part['message']['content'], end='', flush=True)
 
 if __name__ == '__main__':

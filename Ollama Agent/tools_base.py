@@ -14,6 +14,7 @@ def add_two_numbers(a: int, b: int) -> int:
     Returns:
       int: The sum of the two numbers
     """
+    print("function add_two_numbers called")
     return a + b
 
 
@@ -21,6 +22,7 @@ def subtract_two_numbers(a: int, b: int) -> int:
     """
     Subtract two numbers
     """
+    print("function subtract_two_numbers called")
     return a - b
 
 
@@ -55,7 +57,7 @@ async def main():
     client = ollama.AsyncClient()
 
     response: ChatResponse = await client.chat(
-        'qwq',
+        'qwen2.5',
         messages=messages,
         tools=[add_two_numbers, subtract_two_numbers_tool],
     )
@@ -83,7 +85,7 @@ async def main():
 
         # Get final response from model with function outputs
         # 从模型获取最终响应
-        final_response = await client.chat('qwq', messages=messages)
+        final_response = await client.chat('qwen2.5', messages=messages)
         print('Final response:', final_response.message.content)
 
     else:
