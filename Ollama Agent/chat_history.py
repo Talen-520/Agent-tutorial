@@ -23,7 +23,7 @@ async def main():
         # 将用户消息添加到历史
         chat_history.append({'role': 'user', 'content': user_input})
         # 调用chat函数获取助手响应
-        assistant_response = await chat(chat_history,model='llama3.2')
+        assistant_response = await chat(chat_history,model='qwen2.5')
 
         # 将回答添加到历史
         chat_history.append({'role': 'assistant', 'content': assistant_response})

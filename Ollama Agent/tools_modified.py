@@ -1,6 +1,7 @@
 import asyncio
 import ollama
 from ollama import ChatResponse
+
 # 定义工具
 def subtract_two_numbers(a: int, b: int) -> int:
     """
@@ -53,8 +54,21 @@ add_two_numbers_tool = {
     },
 }
 
-# 设置历史记录和系统提示词
-messages = [{'role': 'system', 'content': 'You are a helpful assistant.'}]
+web_search = {
+    'type': 'function',
+    'function': {
+        'name': 'web_search',
+        'description': 'search from google search to get result from internet',
+        'parameters': {
+            'type': 'object',
+            'required': ['query'],
+            'properties': {
+                'query': {'type': 'string', 'description': 'user search query'},
+                
+            },
+        },
+    },
+}
 
 available_functions = {
     'add_two_numbers': add_two_numbers,
@@ -76,6 +90,11 @@ async def call_function(tool_call):
 async def main():
     client = ollama.AsyncClient()
     model_name = 'qwen2.5'
+    # 设置历史记录和系统提示词
+    messages = [{'role': 'system', 'content': 'You are a helpful assistant. When the user asks for up-to-date information or to search the web, use the "web_search" tool to retrieve relevant content. If the user asks for calculations, use the "add_two_numbers" or "subtract_two_numbers" tools.'}
+]
+
+    # 多轮对话
     while True:
         user_input = input("You: ")
         if user_input.lower() in ['exit', 'quit']:
@@ -94,8 +113,6 @@ async def main():
 
         # 输出模型响应，观察输出结果
         print('response:', response)
-        print('response message tool_calls:', response.message.tool_calls)
-        print('response message content:', response.message.tool_calls)
          
         if response.message.tool_calls:
             for tool_call in response.message.tool_calls:

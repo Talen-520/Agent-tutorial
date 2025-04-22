@@ -26,7 +26,6 @@ def subtract_two_numbers(a: int, b: int) -> int:
     return a - b
 
 
-# OpenAI format, Tools can still be manually defined and passed into chat
 # 手动注释, 在ollama中docstring二选一，也可都写
 subtract_two_numbers_tool = {
     'type': 'function',
@@ -44,7 +43,7 @@ subtract_two_numbers_tool = {
     },
 }
 
-messages = [{'role': 'user', 'content': 'What is three plus one?'}]
+messages = [{'role': 'user', 'content': '三加一等于多少?'}]
 print('Prompt:', messages[0]['content'])
 
 available_functions = {
@@ -63,10 +62,8 @@ async def main():
     )
 
     if response.message.tool_calls:
-        # Loop through the tool calls and call the functions
         # 遍历函数并调用所有可用工具
         for tool in response.message.tool_calls:
-            # Ensure the function is available, and then call it
             # 确保函数可用，然后调用它
             if function_to_call := available_functions.get(tool.function.name):
                 print('Calling function:', tool.function.name)
@@ -76,14 +73,10 @@ async def main():
             else:
                 # 如果没有可用工具，则输出错误
                 print('Function', tool.function.name, 'not found')
-    # Only needed to chat with the model using the tool call results
     if response.message.tool_calls:
-        # Add the function response to messages for the model to use
         messages.append(response.message)
         messages.append({'role': 'tool', 'content': str(
             output), 'name': tool.function.name})
-
-        # Get final response from model with function outputs
         # 从模型获取最终响应
         final_response = await client.chat('qwen2.5', messages=messages)
         print('Final response:', final_response.message.content)
