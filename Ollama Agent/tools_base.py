@@ -26,6 +26,35 @@ def subtract_two_numbers(a: int, b: int) -> int:
     return a - b
 
 
+# send email
+def send_email(to  : list[str], subject: str, body: str):
+    """
+    send email to the list of email addresses
+
+    Args:
+      to (list[str]): The list of email addresses
+      subject (str): The subject of the email
+      body (str): The body of the email
+
+    Returns:
+      bool: True if the email is sent successfully, False otherwise
+    """
+    import os
+    import resend
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    resend.api_key = os.environ["RESEND_API_KEY"]
+    params: resend.Emails.SendParams = {
+        "from": "Tao <TaoHu@rabrisai.com>",
+        "to": to,
+        "subject": subject,
+        "html": body,
+    }
+
+    email = resend.Emails.send(params)
+    return True if email else False
+
 # 手动注释, 在ollama中docstring二选一，也可都写
 subtract_two_numbers_tool = {
     'type': 'function',
@@ -49,6 +78,7 @@ print('Prompt:', messages[0]['content'])
 available_functions = {
     'add_two_numbers': add_two_numbers,
     'subtract_two_numbers': subtract_two_numbers,
+    'send_email': send_email,
 }
 
 
@@ -58,7 +88,7 @@ async def main():
     response: ChatResponse = await client.chat(
         'qwen2.5',
         messages=messages,
-        tools=[add_two_numbers, subtract_two_numbers_tool],
+        tools=[add_two_numbers, subtract_two_numbers_tool, send_email],
     )
 
     if response.message.tool_calls:

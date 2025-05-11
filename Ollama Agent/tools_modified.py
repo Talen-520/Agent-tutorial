@@ -21,6 +21,45 @@ def add_two_numbers(a: int, b: int) -> int:
     print("function add_two_numbers called")
     return a + b
 
+# send email
+def send_email(recipients : list[str], subject: str, body: str):
+    """
+    Sends an email with HTML formatting to the list of email addresses.
+
+    Args:
+        recipients (List[str]): The list of email addresses.
+        subject (str): The subject of the email.
+        body (str): The HTML content of the email.
+
+    Returns:
+        str: Status of sending email.
+    """
+    if recipients and subject and body:
+        import os
+        import resend
+        from dotenv import load_dotenv
+        load_dotenv()
+        resend.api_key = os.environ.get("RESEND_API_KEY")
+        if not resend.api_key:
+            return "Error: RESEND_API_KEY environment variable not set."
+        params: resend.Emails.SendParams = {
+
+            "from":  "Name <email@gmail.com>", # 更改为你的发送人email， Name 可以替换为任何名称，<email@gmail.com> 替换为你的域名email
+            "to": recipients,
+            "subject": subject,
+            "html": body,
+        }
+        try:
+            email = resend.Emails.send(params)
+            return f'Email successfully sent to {recipients}'
+        except resend.ResendError as e:
+            return f'Error sending email to {recipients}: {e}'
+        except Exception as e:
+            return f'An unexpected error occurred while sending email to {recipients}: {e}'
+    else:
+        return "Error: Recipients, subject, and body cannot be empty."
+
+
 # OpenAI 格式
 subtract_two_numbers_tool = {
     'type': 'function',
@@ -54,25 +93,32 @@ add_two_numbers_tool = {
     },
 }
 
-web_search = {
+send_email_tool = {
     'type': 'function',
     'function': {
-        'name': 'web_search',
-        'description': 'search from google search to get result from internet',
+        'name': 'send_email',
+        'description': 'Send an email to the specified recipients with a given subject and HTML body.',
         'parameters': {
             'type': 'object',
-            'required': ['query'],
+            'required': ['recipients', 'subject', 'body'],
             'properties': {
-                'query': {'type': 'string', 'description': 'user search query'},
-                
+                'recipients': {
+                    'type': 'array',
+                    'items': {'type': 'string', 'format': 'email'},
+                    'description': 'The list of recipient email addresses.'
+                },
+                'subject': {'type': 'string', 'description': 'The subject line of the email.'},
+                'body': {'type': 'string', 'description': 'The HTML content of the email.'},
             },
         },
     },
 }
 
+
 available_functions = {
     'add_two_numbers': add_two_numbers,
     'subtract_two_numbers': subtract_two_numbers,
+    'send_email': send_email,
 }
 # 用独立函数调用工具，增加代码可读性
 async def call_function(tool_call):
@@ -91,7 +137,7 @@ async def main():
     client = ollama.AsyncClient()
     model_name = 'qwen2.5'
     # 设置历史记录和系统提示词
-    messages = [{'role': 'system', 'content': 'You are a helpful assistant. When the user asks for up-to-date information or to search the web, use the "web_search" tool to retrieve relevant content. If the user asks for calculations, use the "add_two_numbers" or "subtract_two_numbers" tools.'}
+    messages = [{'role': 'system', 'content': 'You are a helpful assistant. you have available tools to used in case you need them'}
 ]
 
     # 多轮对话
@@ -108,7 +154,7 @@ async def main():
         response: ChatResponse = await client.chat(
             model_name,
             messages=messages,
-            tools=[add_two_numbers_tool, subtract_two_numbers_tool],
+            tools=[add_two_numbers_tool, subtract_two_numbers_tool, send_email_tool],
         )
 
         # 输出模型响应，观察输出结果
@@ -139,3 +185,10 @@ if __name__ == '__main__':
         asyncio.run(main())
     except KeyboardInterrupt:
         print('\nGoodbye!')
+
+'''
+example:
+i want send email to my friend, could you help me?
+
+his email add is tao727188712@gmail.com, you decide email subject and body, i want check Parkview Commons' July report. He didn't deliver on time.
+'''
